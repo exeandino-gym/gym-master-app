@@ -547,6 +547,11 @@ style="background:#27c2ff;color:#08111f;margin-top:8px;font-weight:700"
 onclick="mostrarQRGym()">
 📱 Ver QR del Gym
 </button>
+<button class="btn btn-sm btn-full"
+style="background:#22c55e;color:#08111f;margin-top:8px;font-weight:700"
+onclick="mostrarQREntrada()">
+🚪 Ver QR de Entrada
+</button>
         </div>
     <div class="view" id="view-validar" style="display:none;text-align:center">
 
@@ -608,16 +613,42 @@ onclick="mostrarQRGym()">
     </div>
   </div>
 </div>
-<div class="screen" id="qrAccessScreen" style="display:none;align-items:center;justify-content:center;background:var(--bg);">
+<div class="screen" id="qrAccessScreen" style="display:none;align-items:center;justify-content:center;background:var(--bg)">
   <div style="width:100%;max-width:420px;margin:0 auto;padding:24px;">
+    
     <div class="card" style="text-align:center;padding:30px;">
-      <div style="font-size:28px;margin-bottom:12px;">📲</div>
-      <div style="font-size:24px;font-weight:800;margin-bottom:10px;">CONTROL DE ACCESO</div>
-      <div id="resultadoAcceso" style="margin-top:20px;font-size:20px;font-weight:700;">
-        Escaneando...
+      
+      <div style="font-size:26px;font-weight:800;margin-bottom:10px;">
+        CONTROL DE INGRESO
       </div>
+
+      <div id="gymNombreQR" style="font-size:18px;color:var(--muted);margin-bottom:20px;">
+        Gym
+      </div>
+
+      <!-- INPUT IDENTIFICACION -->
+      <input 
+        id="inputClienteQR" 
+        placeholder="Ingresá tu DNI o Teléfono"
+        style="width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:15px;font-size:16px;"
+      />
+
+      <button 
+        onclick="validarIngresoCliente()" 
+        style="width:100%;padding:12px;border-radius:10px;background:#ff6b00;color:white;font-weight:700;border:none;"
+      >
+        VALIDAR ACCESO
+      </button>
+
+      <!-- RESULTADO -->
+      <div id="resultadoAcceso" style="margin-top:20px;font-size:18px;font-weight:700;">
+        
+      </div>
+
     </div>
+
   </div>
+</div>
 </div>
 <!-- ████ GYM APP ████ -->
 <div class="screen" id="gymScreen">
@@ -1046,16 +1077,16 @@ onclick="mostrarQRGym()">
 <div class="modal" id="gymQRModal">
   <div class="modal-box" style="max-width:300px;text-align:center">
     <div class="modal-header">
-      <div class="modal-title">🔑 QR DE ACCESO DEL DUEÑO</div>
+      <div class="modal-title" id="gymQRTitle">🔑 QR DE ACCESO DEL DUEÑO</div>
       <button class="modal-close" onclick="closeModal('gymQRModal')">✕</button>
     </div>
 
     <div class="modal-body" style="text-align:center">
       <canvas id="qrCanvas"></canvas>
 
-      <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-        Escaneá para abrir la app del gimnasio
-      </div>
+      <div id="gymQRText" style="margin-top:10px;font-size:12px;color:var(--muted)">
+  Escaneá para abrir la app del gimnasio
+</div>
 
       <button class="btn btn-full" style="margin-top:10px" onclick="closeModal('gymQRModal')">
         Cerrar
@@ -1666,10 +1697,30 @@ localStorage.removeItem("tempLogo");
     console.error("Error:", error);
   }
 }
+function validarIngresoCliente(){
+    const valor = document.getElementById("inputClienteQR").value.trim();
+
+    if(!valor){
+        alert("Ingresá DNI o teléfono");
+        return;
+    }
+
+    // SIMULACION (después lo conectamos a Firebase)
+    const resultado = document.getElementById("resultadoAcceso");
+
+    // ejemplo simple
+    if(valor === "123"){
+        resultado.innerHTML = "✅ ACCESO PERMITIDO";
+        resultado.style.color = "lime";
+    } else {
+        resultado.innerHTML = "❌ ACCESO DENEGADO";
+        resultado.style.color = "red";
+    }
+}
 function autoOpenGymFromURL(){
     const params = new URLSearchParams(window.location.search);
     const gymSlugURL = params.get("gym");
-
+    const modo = params.get("modo");
     if(!gymSlugURL) return;
 
     const nombre = localStorage.getItem("gymNombreActivo");
@@ -1682,12 +1733,25 @@ function autoOpenGymFromURL(){
         localStorage.setItem("gymEmailActivo", email || "");
         localStorage.setItem("gymLogoActivo", logo || "");
 
-        goTo("gymLoginScreen");
         loadActiveGym();
 
-        setTimeout(() => {
-            mostrarQRGym();
-        }, 300);
+if(modo === "entrada"){
+    document.getElementById("masterLoginScreen").style.display = "none";
+    document.getElementById("masterScreen").style.display = "none";
+    document.getElementById("gymScreen").style.display = "none";
+    document.getElementById("qrAccessScreen").style.display = "flex";
+
+    const gymNombreQR = document.getElementById("gymNombreQR");
+    if(gymNombreQR){
+        gymNombreQR.innerHTML = nombre || "Gym";
+    }
+} else {
+    goTo("gymLoginScreen");
+
+    setTimeout(() => {
+        mostrarQRGym();
+    }, 300);
+}
     }
 }
 window.mostrarQR = function(){
@@ -1714,7 +1778,40 @@ window.mostrarQRGym = function(){
         value: link,
         size: 200
     });
+const titulo = document.getElementById("gymQRTitle");
+const texto = document.getElementById("gymQRText");
 
+if(titulo) titulo.innerHTML = "🔑 QR DE ACCESO DEL DUEÑO";
+if(texto) texto.innerHTML = "Escaneá para abrir la app del gimnasio";
+    openModal("gymQRModal");
+}
+window.mostrarQREntrada = function(){
+    const linkBase = localStorage.getItem("gymLinkActivo");
+
+    if(!linkBase){
+        alert("No hay link del gym");
+        return;
+    }
+
+    const linkEntrada = linkBase + "&modo=entrada";
+
+    const canvas = document.getElementById("qrCanvas");
+
+    if(!canvas){
+        console.log("No encontró el canvas QR");
+        return;
+    }
+
+    new QRious({
+        element: canvas,
+        value: linkEntrada,
+        size: 200
+    });
+const titulo = document.getElementById("gymQRTitle");
+const texto = document.getElementById("gymQRText");
+
+if(titulo) titulo.innerHTML = "🚪 QR UNIVERSAL DE ENTRADA";
+if(texto) texto.innerHTML = "Escaneá para abrir el control de ingreso";
     openModal("gymQRModal");
 }
 window.onload = function(){
