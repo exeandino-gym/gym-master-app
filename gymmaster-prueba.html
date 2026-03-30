@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GymMaster Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--s1:#111118;--s2:#18181f;--s3:#222230;
+  --border:#2a2a3a;--gold:#f5c518;--red:#e01f26;
+  --green:#2ecc71;--blue:#47d4ff;--purple:#a855f7;--orange:#ff6b00;
+  --text:#f0f0ff;--muted:#6b6b88;--muted2:#4a4a60;
+  --gym-accent:#e01f26;
+  --font-d:'Bebas Neue',sans-serif;
+  --font-b:'DM Sans',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:var(--font-b);background:radial-gradient(circle at top, #141420 0%, var(--bg) 45%);color:var(--text);overflow:hidden}
+button,input,select,textarea{font-family:var(--font-b)}
+
+/* SCREENS */
+.screen{
+  display:none;
+  height:100%;
+  flex-direction:column;
+  overflow:hidden;
+}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fadeUp{animation:fadeUp .25s ease}
+
+/* BTNS */
+.btn{padding:10px 18px;border-radius:10px;border:none;font-size:13px;font-weight:700;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.12)}
+.btn-primary{background:linear-gradient(135deg,var(--gym-accent),#ff4d55);color:#fff}.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-gold{background:linear-gradient(135deg,#f5c518,#ffd84d);color:#000}.btn-gold:hover{background:#d4aa00;transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#000}
+.btn-danger{background:rgba(224,31,38,.15);color:var(--red);border:none}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:6px}
+.btn-lg{padding:14px 28px;font-size:16px;font-family:var(--font-d);letter-spacing:2px}
+.btn-full{width:100%;justify-content:center}
+
+/* FORM */
+.fl{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;display:block}
+.fi,.fsel,.fta{width:100%;padding:11px 14px;background:#161620;border:1px solid rgba(255,255,255,.08);border-radius:10px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--gym-accent);box-shadow:0 0 0 3px rgba(224,31,38,.12)}
+.fi::placeholder{color:var(--muted)}
+.fsel{appearance:none}
+.fsel option{background:var(--s2)}
+.fg{margin-bottom:13px}
+.fr{display:grid;gap:10px;margin-bottom:13px}
+.fr2{grid-template-columns:1fr 1fr}
+@media(max-width:500px){.fr2{grid-template-columns:1fr}}
+
+/* TOPBAR */
+.topbar{
+  height:58px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  background:linear-gradient(180deg, rgba(24,24,31,.98), rgba(17,17,24,.96));
+}
+.app-body{
+  display:flex;
+  height:calc(100vh - 58px);
+}
+.ham{width:36px;height:36px;border-radius:7px;background:transparent;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;flex-shrink:0}
+.ham span{display:block;width:16px;height:2px;background:var(--text);border-radius:2px;transition:all .25s}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.tb-title{font-family:var(--font-d);font-size:19px;letter-spacing:1px;flex:1}
+.tb-logo-txt{font-family:var(--font-d);font-size:18px;color:var(--gym-accent);display:none}
+
+/* SIDEBAR */
+.sidebar{width:236px;flex-shrink:0;background:linear-gradient(180deg,#12121a 0%,#0f0f16 100%);border-right:1px solid rgba(245,197,24,.1);display:flex;flex-direction:column;transition:transform .25s;overflow-y:auto}
+.sb-logo{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-logo-img{width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.sb-logo-name{font-family:var(--font-d);font-size:16px;letter-spacing:2px;line-height:1.1}
+.sb-logo-sub{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.nav{flex:1;padding:8px 0}
+.nav-sec{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-left:3px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{color:var(--text);background:var(--s2)}
+.nav-item.active{color:var(--gym-accent);border-left-color:var(--gym-accent);background:rgba(224,31,38,.06)}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:8px}
+.ava{width:32px;height:32px;border-radius:50%;background:var(--gym-accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:40;backdrop-filter:blur(2px)}
+.sb-overlay.show{display:block}
+
+/* MAIN */
+.screen{
+  display:none;
+  height:100%;
+  flex-direction:column;
+  overflow:auto;
+}
+.mc{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 22px 22px}
+
+.mc::-webkit-scrollbar{width:3px}
+.mc::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* VIEWS */
+.view{
+  display:none;
+  width:100%;
+}
+
+.view.active{
+  display:block;
+  width:100%;
+  animation:fadeUp .2s ease;
+}
+#mv-dash,
+#mv-gyms,
+#mv-crear,
+#mv-subs,
+#mv-stats{
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+}
+/* CARDS */
+.card{background:linear-gradient(180deg,rgba(24,24,31,.96),rgba(17,17,24,.98));border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 16px 40px rgba(0,0,0,.22)}
+.card-header{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted)}
+.card-body{padding:16px}
+
+/* STATS */
+.sg{display:grid;gap:10px;margin-bottom:14px}
+.sg2{grid-template-columns:repeat(2,1fr)}
+.sg3{grid-template-columns:repeat(3,1fr)}
+.sg4{grid-template-columns:repeat(2,1fr)}
+@media(min-width:600px){.sg4{grid-template-columns:repeat(4,1fr)}.sg3{grid-template-columns:repeat(3,1fr)}}
+.sc{background:linear-gradient(180deg,rgba(24,24,31,.96),rgba(17,17,24,.98));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:15px;position:relative;overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.18);transition:transform .18s,border-color .18s}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc:hover{transform:translateY(-2px);border-color:rgba(245,197,24,.18)}
+.sc-r::before{background:var(--red)}.sc-g::before{background:var(--green)}
+.sc-b::before{background:var(--blue)}.sc-y::before{background:var(--gold)}
+.sc-p::before{background:var(--purple)}.sc-w::before{background:#fff}
+.sc-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.sc-val{font-family:var(--font-d);font-size:28px;line-height:1}
+.sv-r{color:var(--red)}.sv-g{color:var(--green)}.sv-b{color:var(--blue)}
+.sv-y{color:var(--gold)}.sv-p{color:var(--purple)}.sv-w{color:#fff}
+.sc-delta{font-size:10px;color:var(--muted);margin-top:3px}
+.dg{color:var(--green)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.bg{background:rgba(46,204,113,.12);color:var(--green)}
+.br{background:rgba(224,31,38,.15);color:var(--red)}
+.bb{background:rgba(71,212,255,.12);color:var(--blue)}
+.bp{background:rgba(168,85,247,.15);color:var(--purple)}
+.by{background:rgba(245,197,24,.12);color:var(--gold)}
+.bw{background:rgba(255,255,255,.08);color:#fff}
+.bo{background:rgba(255,107,0,.15);color:var(--orange)}
+
+/* SEMAPHORE */
+.sema{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sema-g{background:var(--green);box-shadow:0 0 6px var(--green)}
+.sema-y{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.sema-o{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.sema-r{background:var(--red);box-shadow:0 0 6px var(--red)}
+.sema-badge-g{background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.3)}
+.sema-badge-y{background:rgba(245,197,24,.12);color:var(--gold);border:1px solid rgba(245,197,24,.3)}
+.sema-badge-o{background:rgba(255,107,0,.12);color:var(--orange);border:1px solid rgba(255,107,0,.3)}
+.sema-badge-r{background:rgba(224,31,38,.12);color:var(--red);border:1px solid rgba(224,31,38,.3)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:360px}
+th{text-align:left;padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:9px 12px;font-size:12px;border-bottom:1px solid rgba(42,42,58,.4);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.018)}
+
+/* ACTIVITY */
+.act-list{display:flex;flex-direction:column}
+.act-item{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid rgba(42,42,58,.3)}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ad-g{background:var(--green)}.ad-r{background:var(--red)}.ad-b{background:var(--blue)}.ad-y{background:var(--gold)}
+.act-info{flex:1;min-width:0}
+.act-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-sub{font-size:11px;color:var(--muted)}
+.act-time{font-family:var(--font-m);font-size:11px;color:var(--muted);flex-shrink:0}
+
+/* PROG BAR */
+.prog{background:var(--s3);border-radius:4px;height:5px;overflow:hidden;margin:4px 0 2px}
+.prog-fill{height:100%;border-radius:4px}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:600;align-items:center;justify-content:center;padding:14px}
+.modal.open{display:flex}
+.modal-box{background:var(--s1);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;max-height:92vh;overflow-y:auto}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--font-d);font-size:20px;letter-spacing:1px}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.modal-body{padding:18px}
+
+/* NOTIFICATION */
+.notif{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--gym-accent);border-radius:10px;padding:10px 20px;font-size:13px;white-space:nowrap;transition:all .3s;opacity:0;z-index:9999;pointer-events:none}
+.notif.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* QR SCAN */
+.scan-frame{width:155px;height:155px;border:2px solid var(--gym-accent);border-radius:14px;position:relative;display:flex;align-items:center;justify-content:center;animation:pulseB 2s ease-in-out infinite;margin:0 auto}
+@keyframes pulseB{0%,100%{box-shadow:0 0 0 0 rgba(224,31,38,.25)}50%{box-shadow:0 0 0 12px rgba(224,31,38,0)}}
+.scan-line{position:absolute;inset:10px;overflow:hidden}
+.scan-beam{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gym-accent),transparent);animation:sa 2s linear infinite}
+@keyframes sa{from{top:0}to{top:100%}}
+
+/* FLYER */
+.flyer-wrap{border-radius:12px;overflow:hidden;margin-bottom:14px;position:relative;aspect-ratio:1;background:linear-gradient(135deg,var(--gym-accent),#000);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;min-height:200px}
+.flyer-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.06),transparent 60%)}
+.fy-name{font-family:var(--font-d);font-size:clamp(20px,5vw,30px);letter-spacing:3px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.4);position:relative}
+.fy-text{font-size:clamp(11px,3vw,14px);color:rgba(255,255,255,.85);margin-top:6px;line-height:1.45;position:relative}
+.fy-tag{background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 14px;margin-top:12px;font-size:clamp(9px,2.5vw,11px);letter-spacing:1.5px;text-transform:uppercase;color:#fff;position:relative}
+
+/* SOCIAL BTNS */
+.sb{padding:10px 16px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;width:100%;justify-content:center}
+.sb-wa{background:#25d366;color:#fff}
+.sb-ig{background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff}
+.sb-fb{background:#1877f2;color:#fff}
+
+/* AI PANEL */
+.ai-box{background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(71,212,255,.04));border:1px solid rgba(168,85,247,.22);border-radius:12px;padding:15px;margin-bottom:14px}
+.ai-title{font-family:var(--font-d);font-size:16px;letter-spacing:1px;color:var(--purple);margin-bottom:3px}
+.ai-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+
+/* COLOR PICKER */
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.cdot.on{border-color:#fff;transform:scale(1.18)}
+
+/* UPLOAD AREA */
+.upload-area{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden}
+.upload-area:hover{border-color:var(--muted)}
+.upload-area.has-logo{border-color:var(--gym-accent);border-style:solid}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-preview{width:80px;height:80px;object-fit:contain;border-radius:8px;margin:0 auto 8px;display:block}
+
+/* GYM CARD */
+.gym-card{background:linear-gradient(180deg,rgba(24,24,31,.96),rgba(17,17,24,.98));border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;transition:border-color .2s,transform .15s,box-shadow .15s;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.16)}
+.gym-card:hover{border-color:rgba(245,197,24,.22);transform:translateY(-3px);box-shadow:0 18px 36px rgba(0,0,0,.24)}
+.gym-card-top{height:65px;display:flex;align-items:center;justify-content:center;position:relative;padding:10px}
+.gym-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.gms{background:var(--s2);border-radius:7px;padding:7px;text-align:center}
+.gms-val{font-family:var(--font-d);font-size:17px;line-height:1}
+.gms-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+
+/* PLAN CARD */
+.plan-card{background:linear-gradient(180deg,rgba(24,24,31,.96),rgba(17,17,24,.98));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:20px;position:relative;transition:border-color .2s,transform .18s;margin-bottom:14px;box-shadow:0 14px 30px rgba(0,0,0,.18)}
+.plan-card:hover{border-color:var(--gym-accent);transform:translateY(-2px)}
+.plan-card.feat{border-color:var(--gym-accent)}
+.plan-badge{position:absolute;top:-1px;right:16px;background:var(--gym-accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:2px;padding:3px 8px;border-radius:0 0 6px 6px;text-transform:uppercase}
+.plan-name{font-family:var(--font-d);font-size:20px;letter-spacing:1px}
+.plan-price{font-family:var(--font-d);font-size:30px;color:var(--gym-accent);line-height:1.1}
+.plan-feats{list-style:none;margin:8px 0 12px;display:flex;flex-direction:column;gap:5px}
+.plan-feats li{font-size:12px;color:var(--muted);display:flex;gap:6px}
+.plan-feats li::before{content:'✓';color:var(--green);font-weight:800}
+
+/* CASH */
+.cash-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(42,42,58,.3)}
+.cash-row:last-child{border-bottom:none}
+.cash-lbl{font-size:13px;color:var(--muted)}
+.cash-amt{font-family:var(--font-m);font-size:14px;font-weight:600}
+
+/* LINK BOX */
+.link-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.link-txt{font-family:var(--font-m);font-size:11px;flex:1;word-break:break-all}
+
+/* PWA INFO */
+.pwa-steps{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pwa-step{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--s2);border-radius:8px}
+.pwa-num{width:22px;height:22px;border-radius:50%;background:var(--gym-accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.pwa-txt{font-size:12px;color:var(--muted);line-height:1.4}
+.pwa-txt strong{color:var(--text)}
+
+/* LOGIN SCREENS */
+.login-wrap{display:flex;align-items:center;justify-content:center;height:100%;background:var(--bg);padding:20px;overflow:auto}
+.login-box{width:100%;max-width:420px;background:linear-gradient(180deg,rgba(24,24,31,.98),rgba(17,17,24,.98));border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:38px 30px;position:relative;overflow:hidden;box-shadow:0 24px 70px rgba(224,31,38,.12)}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gym-accent),var(--gold))}
+.login-logo-hero{height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;position:relative}
+.login-logo-hero img{max-height:110px;max-width:200px;object-fit:contain}
+.login-gym-name{font-family:var(--font-d);font-size:28px;letter-spacing:3px;text-align:center;color:#fff;line-height:1;margin-bottom:4px}
+.login-gym-sub{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:28px}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px}
+.forgot-link{text-align:center;margin-top:14px;font-size:12px;color:var(--muted);cursor:pointer}
+.forgot-link:hover{color:var(--blue)}
+.chk-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;cursor:pointer;user-select:none}
+.chk{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);background:var(--s2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.chk.on{background:var(--gym-accent);border-color:var(--gym-accent)}
+.chk.on::after{content:'✓';font-size:11px;color:#fff;font-weight:800}
+.login-bg-txt{position:absolute;font-family:var(--font-d);font-size:clamp(60px,20vw,160px);color:rgba(255,255,255,.02);letter-spacing:8px;user-select:none;pointer-events:none;white-space:nowrap;top:50%;left:50%;transform:translate(-50%,-50%)}
+.btn-login{width:100%;padding:13px;background:var(--gym-accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-d);font-size:20px;letter-spacing:2px;cursor:pointer;transition:all .15s}
+.btn-login:hover{filter:brightness(1.1)}
+.btn-login:active{transform:scale(.98)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:45;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .tb-logo-txt{display:block}.tb-title{display:none}
+  .mc{padding:12px 12px 22px}
+  .card,.sc,.gym-card,.plan-card{border-radius:14px}
+}
+@media(min-width:641px){
+  .ham{display:none}.tb-logo-txt{display:none}.tb-title{display:block}
+  .sidebar{position:relative;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ████ MASTER LOGIN ████ -->
+<div class="screen active" id="masterLoginScreen">
+  <div class="login-wrap">
+    <div class="login-bg-txt">MASTER</div>
+    <div class="login-box">
+      <div class="login-logo-hero">
+        <div style="text-align:center">
+          <div style="font-family:var(--font-d);font-size:52px;letter-spacing:4px;color:var(--gold);line-height:1">GYM</div>
+          <div style="font-family:var(--font-d);font-size:28px;letter-spacing:8px;color:#fff;margin-top:-4px">MASTER</div>
+          <div style="font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px">Sistema Multi-Gimnasio</div>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Usuario Master</label>
+        <div style="position:relative"><input class="fi" id="mUser" placeholder="admin@gymmaster.app" autocomplete="username"></div>
+      </div>
+      <div class="fg"><label class="fl">Contraseña</label>
+        <div style="position:relative">
+          <input class="fi" id="mPass" type="password" placeholder="••••••••" style="padding-right:40px" autocomplete="current-password">
+          <button class="eye-btn" onclick="togglePass('mPass')">👁</button>
+        </div>
+      </div>
+      <div class="chk-row" onclick="toggleChk('mChk')">
+        <div class="chk" id="mChk"></div>
+        <span style="font-size:13px;color:var(--muted)">Recordar contraseña</span>
+      </div>
+      <button class="btn-login" onclick="doMasterLogin()">INGRESAR</button>
+      <div class="forgot-link" onclick="openModal('forgotMasterModal')">¿Olvidaste tu contraseña?</div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ GYM LOGIN ████ -->
+<div class="screen" id="gymLoginScreen">
+  <div class="login-wrap">
+    <div class="login-bg-txt">EVOLUTION</div>
+    <div class="login-box">
+      <div class="login-logo-hero">
+        <img id="gymLoginLogo" src="" style="width:80px;height:80px;object-fit:contain;display:none;">
+      </div>
+      <div class="login-gym-name" id="gymTitle">EVOLUTION FITNESS</div>
+      <div class="login-gym-sub" id="gymEmail">Sistema de Gestión</div>
+      <div class="fg"><label class="fl">Usuario</label>
+        <input class="fi" id="gUser" placeholder="dueño@evolutionfitness.com" autocomplete="username">
+      </div>
+      <div class="fg"><label class="fl">Contraseña</label>
+        <div style="position:relative">
+          <input class="fi" id="gPass" type="password" placeholder="••••••••" style="padding-right:40px" autocomplete="current-password">
+          <button class="eye-btn" onclick="togglePass('gPass')">👁</button>
+        </div>
+      </div>
+      <div class="chk-row" onclick="toggleChk('gChk')">
+        <div class="chk" id="gChk"></div>
+        <span style="font-size:13px;color:var(--muted)">Recordar contraseña</span>
+      </div>
+      <button class="btn-login" style="background:var(--red)" onclick="doGymLogin()">INGRESAR</button>
+      <div class="forgot-link" onclick="openModal('forgotGymModal')">¿Olvidaste tu contraseña? Contactá al administrador</div>
+      <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--muted2)">¿Problemas de acceso? Contactá a <span style="color:var(--blue);cursor:pointer" onclick="notify('Contactando a GymMaster Pro...')">GymMaster Pro</span></div>
+    </div>
+    <button class="btn btn-ghost" style="position:absolute;top:12px;left:12px;font-size:11px" onclick="goTo('roleScreen')">← Demo</button>
+  </div>
+</div>
+
+<!-- ████ ROLE SELECTOR (DEMO HUB) ████ -->
+<div class="screen" id="roleScreen" style="align-items:center;justify-content:center;background:var(--bg);padding:20px;position:relative;overflow:hidden">
+  <div style="position:absolute;font-family:var(--font-d);font-size:clamp(50px,16vw,160px);color:rgba(255,255,255,.02);letter-spacing:8px;user-select:none;white-space:nowrap;top:50%;transform:translateY(-50%)">GYMMASTER</div>
+  <div style="width:100%;max-width:400px;z-index:1">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:var(--font-d);font-size:clamp(26px,8vw,46px);letter-spacing:4px;color:#fff;line-height:1">GYM<span style="color:var(--gold)">MASTER</span></div>
+      <div style="font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px">Demo Completo — Elegí un rol</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <button class="btn btn-gold btn-lg btn-full" onclick="goTo('masterLoginScreen')">👑 PANEL MASTER</button>
+      <button class="btn btn-lg btn-full" style="background:var(--red);color:#fff" onclick="goTo('gymLoginScreen')">🏋️ APP DEL DUEÑO — Evolution Fitness</button>
+      <button class="btn btn-lg btn-full" style="background:var(--s2);border:1px solid var(--border);color:var(--text)" onclick="goTo('encargadoScreen')">👤 ENCARGADO</button>
+      <button class="btn btn-lg btn-full" style="background:var(--s2);border:1px solid var(--border);color:var(--text)" onclick="showClientReg()">📱 REGISTRO DE CLIENTE</button>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted2)">Demo interactivo — todos los módulos funcionan</div>
+  </div>
+</div>
+
+<!-- ████ MASTER APP ████ -->
+<div class="screen" id="masterScreen">
+  <div class="topbar">
+    <div class="ham" id="mHam" onclick="toggleSB('mSB','mHam','mOv')"><span></span><span></span><span></span></div>
+    <div class="tb-logo-txt" style="color:var(--gold)">MASTER</div>
+    <div class="tb-title" id="mTitle">PANEL MASTER</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-gold btn-sm" onclick="openModal('newGymModal')">+ Gym</button>
+      <button class="btn btn-ghost btn-sm" onclick="goTo('roleScreen')">←</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sb-overlay" id="mOv" onclick="closeSB('mSB','mHam','mOv')"></div>
+    <aside class="sidebar" id="mSB">
+      <div class="sb-logo" style="display:flex;align-items:center;gap:10px;">
+  
+  <div style="width:40px;height:40px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;">
+  <span style="font-weight:700;color:#000;">GM</span>
+</div>
+
+  <div>
+    <div class="sb-logo-name" id="gymTitleSidebar">GYMMASTER</div>
+    <div class="sb-logo-sub">Panel Master</div>
+  </div>
+
+</div>
+      <nav class="nav">
+        <div class="nav-sec">Control</div>
+        <div class="nav-item active" onclick="showMV('mv-dash',this,'PANEL MASTER')"><span class="nav-icon">📊</span>Dashboard</div>
+        <div class="nav-item" onclick="showMV('mv-gyms',this,'MIS GIMNASIOS')"><span class="nav-icon">🏢</span>Mis Gimnasios</div>
+        <div class="nav-item" onclick="showMV('mv-crear',this,'CREAR GIMNASIO CON IA')"><span class="nav-icon">✨</span>Crear con IA</div>
+        <div class="nav-sec">Finanzas</div>
+        <div class="nav-item" onclick="showMV('mv-subs',this,'SUSCRIPCIONES')"><span class="nav-icon">💰</span>Suscripciones</div>
+        <div class="nav-item" onclick="showMV('mv-stats',this,'ESTADÍSTICAS')"><span class="nav-icon">📈</span>Estadísticas</div>
+        <div class="nav-sec">Cuenta</div>
+        <div class="nav-item" onclick="goTo('roleScreen')" style="color:var(--red)"><span class="nav-icon">🚪</span>Salir</div>
+      </nav>
+      <div class="sb-footer">
+        <div class="user-pill">
+          <div class="ava" style="background:var(--gold);color:#000">MA</div>
+          <div><div style="font-size:12px;font-weight:600">Master Admin</div><div style="font-size:10px;color:var(--muted)">admin@gymmaster.app</div></div>
+        </div>
+      </div>
+    </aside>
+    <div class="mc">
+
+      <!-- DASH MASTER -->
+      <div class="view active" id="mv-dash">
+        <div class="sg sg4">
+          <div class="sc sc-y"><div class="sc-label">Gimnasios Activos</div><div class="sc-val sv-y">3</div><div class="sc-delta dg">+1 este mes</div></div>
+          <div class="sc sc-g"><div class="sc-label">Ingresos Mes</div><div class="sc-val sv-g">$45k</div><div class="sc-delta">suscripciones</div></div>
+          <div class="sc sc-b"><div class="sc-label">Total Socios</div><div class="sc-val sv-b">726</div><div class="sc-delta dg">+34 esta semana</div></div>
+          <div class="sc sc-r"><div class="sc-label">Alertas</div><div class="sc-val sv-r">2</div><div class="sc-delta">vencimientos próx.</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Actividad en Tiempo Real</div><span class="badge bg" style="font-size:9px">● LIVE</span></div>
+          <div class="act-list">
+            <div class="act-item"><div class="act-dot ad-g"></div><div class="act-info"><div class="act-name">Evolution Fitness — Nuevo socio registrado</div><div class="act-sub">Lucas Pereyra · Plan Semana</div></div><div class="act-time">09:47</div></div>
+            <div class="act-item"><div class="act-dot ad-b"></div><div class="act-info"><div class="act-name">PowerGym Center — Pago suscripción recibido</div><div class="act-sub">$40.000 · Trimestral</div></div><div class="act-time">09:31</div></div>
+            <div class="act-item"><div class="act-dot ad-y"></div><div class="act-info"><div class="act-name">FitLife Club — Suscripción vence en 3 días</div><div class="act-sub">⚠ Renovar antes del 26/03</div></div><div class="act-time">09:00</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIS GIMNASIOS -->
+      <div class="view" id="mv-gyms">
+        <<div id="gymContainer" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-bottom:14px">
+          </div>
+            
+          </div>
+      </div>
+
+      <!-- CREAR GYM CON IA -->
+      <div class="view" id="mv-crear">
+        <div class="ai-box">
+          <div class="ai-title">✨ Diseño con IA</div>
+          <div class="ai-sub">Subí el logo del nuevo gimnasio y describí cómo queda. La IA personaliza todo.</div>
+          <div class="fg">
+            <label class="fl">Logo del Gimnasio</label>
+            <div class="upload-area" id="logoUpload" onclick="triggerUpload()">
+              <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" style="display:none">
+              <div id="uploadPlaceholder">
+                <div style="font-size:32px;margin-bottom:6px">📁</div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">Subir Logo</div>
+                <div style="font-size:11px;color:var(--muted)">PNG, JPG o SVG recomendado</div>
+                <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="event.stopPropagation();triggerUpload()">Seleccionar archivo</button>
+              </div>
+              <div id="logoPreviewWrap" style="display:none">
+                <img id="logoPreviewImg" class="logo-preview" alt="Logo">
+                <div style="font-size:12px;color:var(--green);font-weight:600">✓ Logo cargado</div>
+                <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="event.stopPropagation();resetLogo()">Cambiar</button>
+              </div>
+            </div>
+          </div>
+          <div class="fg">
+   <div class="fg">
+  <label class="f1">Logo del Gimnasio</label>
+  <input type="file" id="logoInput" accept="image/*" class="input">
+  <img id="logoPreview" style="margin-top:10px;max-width:100px;display:none;border-radius:8px;">
+</div>         
+  <label class="f1">Nombre del Gimnasio</label>
+  <input id="newGymName" class="input" placeholder="Ej: 
+  ">
+</div>
+
+<div class="fg">
+  <label class="f1">Email del Gimnasio</label>
+  <input id="newGymEmail" class="input" placeholder="ejemplo@gmail.com">
+</div>
+
+<div class="fg">
+  <label class="f1">Teléfono del Gimnasio</label>
+  <input id="gymPhone" class="input" placeholder="2634...">
+</div>
+
+<hr style="margin:20px 0;opacity:0.2">
+
+  <div class="fg">
+  <label class="f1">Nombre del Dueño</label>
+  <input id="ownerName" class="input" placeholder="Nombre">
+</div>
+
+<div class="fg">
+  <label class="f1">Apellido del Dueño</label>
+  <input id="ownerLastName" class="input" placeholder="Apellido">
+</div>
+
+<div class="fg">
+  <label class="f1">DNI</label>
+  <input id="ownerDni" class="input" placeholder="DNI">
+</div>
+
+<div class="fg">
+  <label class="f1">Teléfono del Dueño</label>
+  <input id="ownerPhone" class="input" placeholder="Teléfono">
+</div>
+          <div class="fg">
+            <label class="fl">Describí el gimnasio para la IA</label>
+            <textarea class="fta" id="aiGymDesc" rows="2" placeholder="Ej: boxeo urbano, colores oscuros, público joven, energía agresiva..."></textarea>
+          </div>
+          <button class="btn btn-sm btn-full" style="background:var(--purple);color:#fff" onclick="generateGymDesign()">✨ Generar Diseño</button>
+          <div id="aiGymPreview" style="margin-top:12px;height:60px;border-radius:8px;background:linear-gradient(135deg,var(--red),#000);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:18px;letter-spacing:2px;color:#fff;transition:all .4s">NUEVO GYM</div>
+          <button class="btn btn-gold btn-full" style="margin-top:12px" onclick="createGym()">
+  🚀 Crear y Generar Link
+</button>
+<button class="btn btn-sm btn-full"
+style="background:#27c2ff;color:#08111f;margin-top:8px;font-weight:700"
+onclick="mostrarQRGym()">
+📱 Ver QR del Gym
+</button>
+        </div>
+    <div class="view" id="view-validar" style="display:none;text-align:center">
+
+  <h2>CONTROL DE ACCESO</h2>
+
+  <div id="resultadoAcceso" style="margin-top:20px;font-size:20px;font-weight:700">
+    Escaneando...
+  </div>
+
+</div>    
+
+        <!-- PWA EXPLANATION -->
+        <div class="card" style="border-color:rgba(71,212,255,.2)">
+          <div class="card-header"><div class="card-title" style="color:var(--blue)">📱 ¿Cómo funciona el Link PWA?</div></div>
+          <div class="card-body" style="padding-top:10px">
+            <div class="pwa-steps">
+              <div class="pwa-step"><div class="pwa-num">1</div><div class="pwa-txt"><strong>Generás el gym</strong> → el sistema crea un link único personalizado con el diseño del dueño</div></div>
+              <div class="pwa-step"><div class="pwa-num">2</div><div class="pwa-txt"><strong>Le enviás el link</strong> por WhatsApp o email → ej: gymmaster.app/ef-fitness</div></div>
+              <div class="pwa-step"><div class="pwa-num">3</div><div class="pwa-txt"><strong>El dueño lo abre</strong> en su celular → el navegador le pregunta "¿Instalar aplicación?"</div></div>
+              <div class="pwa-step"><div class="pwa-num">4</div><div class="pwa-txt"><strong>Lo instala</strong> → queda el ícono en la pantalla como cualquier app. <strong>Sin Play Store ni App Store</strong></div></div>
+              <div class="pwa-step"><div class="pwa-num">5</div><div class="pwa-txt"><strong>Abre la app</strong> → ya tiene su sistema personalizado con su logo, colores y nombre</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUSCRIPCIONES -->
+      <div class="view" id="mv-subs">
+        <div class="sg sg3">
+          <div class="sc sc-g"><div class="sc-label">Cobrado</div><div class="sc-val sv-g" style="font-size:22px">$55k</div></div>
+          <div class="sc sc-r"><div class="sc-label">Pendiente</div><div class="sc-val sv-r" style="font-size:22px">$15k</div></div>
+          <div class="sc sc-y"><div class="sc-label">Proyectado</div><div class="sc-val sv-y" style="font-size:22px">$70k</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Estado de Suscripciones</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Gimnasio</th><th>Plan</th><th>Monto</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>Evolution Fitness</td><td>Mensual</td><td style="font-family:var(--font-m)">$15.000</td><td style="font-family:var(--font-m);font-size:11px">15/04/25</td><td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-g"></span><span class="badge bg">OK</span></div></td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+                <tr><td>PowerGym Center</td><td>Trimestral</td><td style="font-family:var(--font-m)">$40.000</td><td style="font-family:var(--font-m);font-size:11px">20/06/25</td><td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-g"></span><span class="badge bg">OK</span></div></td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+                <tr><td>FitLife Club</td><td>Mensual</td><td style="font-family:var(--font-m)">$15.000</td><td style="font-family:var(--font-m);font-size:11px;color:var(--orange)">26/03/25</td><td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-o"></span><span class="badge bo">3 días</span></div></td><td><button class="btn btn-primary btn-sm" onclick="notify('Enviando aviso...')">Cobrar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS MASTER -->
+      <div class="view" id="mv-stats">
+        <div class="card"><div class="card-header"><div class="card-title">Socios Totales por Gym</div></div>
+          <div class="card-body">
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>PowerGym Center</span><span style="color:var(--blue);font-weight:600">312</span></div><div class="prog"><div class="prog-fill" style="width:72%;background:var(--blue)"></div></div></div>
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Evolution Fitness</span><span style="color:var(--red);font-weight:600">248</span></div><div class="prog"><div class="prog-fill" style="width:57%;background:var(--red)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>FitLife Club</span><span style="color:var(--green);font-weight:600">166</span></div><div class="prog"><div class="prog-fill" style="width:38%;background:var(--green)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="screen" id="qrAccessScreen" style="display:none;align-items:center;justify-content:center;background:var(--bg);">
+  <div style="width:100%;max-width:420px;margin:0 auto;padding:24px;">
+    <div class="card" style="text-align:center;padding:30px;">
+      <div style="font-size:28px;margin-bottom:12px;">📲</div>
+      <div style="font-size:24px;font-weight:800;margin-bottom:10px;">CONTROL DE ACCESO</div>
+      <div id="resultadoAcceso" style="margin-top:20px;font-size:20px;font-weight:700;">
+        Escaneando...
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ████ GYM APP ████ -->
+<div class="screen" id="gymScreen">
+  <div class="topbar">
+    <div class="ham" id="gHam" onclick="toggleSB('gSB','gHam','gOv')"><span></span><span></span><span></span></div>
+    <div class="tb-logo-txt" style="color:var(--red)">EF</div>
+    <div class="tb-title" id="gTitle">DASHBOARD</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-primary btn-sm" id="gTopBtn" onclick="notify('Acción ejecutada')">+ Nuevo</button>
+      <button class="btn btn-ghost btn-sm" onclick="goTo('roleScreen')">←</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sb-overlay" id="gOv" onclick="closeSB('gSB','gHam','gOv')"></div>
+    <aside class="sidebar" id="gSB">
+      <!-- LOGO EN GRANDE EN SIDEBAR -->
+      <div class="sb-logo" style="padding:0;flex-direction:column;align-items:center;justify-content:center;height:110px;background:linear-gradient(180deg,rgba(224,31,38,.15),transparent)">
+      </div>
+      <nav class="nav">
+        <div class="nav-sec">Principal</div>
+        <div class="nav-item active" onclick="showGV('gv-dash',this,'DASHBOARD','+ Nuevo')"><span class="nav-icon">📊</span>Dashboard</div>
+        <div class="nav-item" onclick="showGV('gv-socios',this,'SOCIOS','+ Agregar')"><span class="nav-icon">👥</span>Socios</div>
+        <div class="nav-item" onclick="showGV('gv-qr',this,'ACCESO QR','▶ Cámara')"><span class="nav-icon">📷</span>Acceso QR</div>
+        <div class="nav-sec">Gestión</div>
+        <div class="nav-item" onclick="showGV('gv-pagos',this,'PAGOS','+ Pago')"><span class="nav-icon">💳</span>Pagos</div>
+        <div class="nav-item" onclick="showGV('gv-planes',this,'PLANES','+ Plan')"><span class="nav-icon">📋</span>Planes</div>
+        <div class="nav-item" onclick="showGV('gv-caja',this,'CAJA DIARIA','+ Mov.')"><span class="nav-icon">🏦</span>Caja</div>
+        <div class="nav-sec">Marketing</div>
+        <div class="nav-item" onclick="showGV('gv-flyer',this,'FLYER CON IA','✨ Crear')"><span class="nav-icon">🎨</span>Flyer IA</div>
+        <div class="nav-item" onclick="showGV('gv-links',this,'LINKS Y ACCESOS','📋 Copiar')"><span class="nav-icon">🔗</span>Links</div>
+        <div class="nav-sec">Admin</div>
+        <div class="nav-item" onclick="showGV('gv-encargados',this,'ENCARGADOS','+ Agregar')"><span class="nav-icon">👤</span>Encargados</div>
+        <div class="nav-item" onclick="showGV('gv-historial',this,'HISTORIAL','↓ Export')"><span class="nav-icon">📅</span>Historial</div>
+        <div class="nav-item" onclick="openModal('changePassModal')" style="color:var(--blue)"><span class="nav-icon">🔑</span>Cambiar Clave</div>
+        <div class="nav-item" onclick="goTo('roleScreen')" style="color:var(--red)"><span class="nav-icon">🚪</span>Salir</div>
+      </nav>
+      <div class="sb-footer">
+        <div class="user-pill">
+          <div class="ava">EF</div>
+          <div><div style="font-size:12px;font-weight:600">Dueño</div><div style="font-size:10px;color:var(--muted)">Evolution Fitness</div></div>
+        </div>
+      </div>
+    </aside>
+    <div class="mc">
+
+      <!-- GV: DASHBOARD -->
+      <div class="view active" id="gv-dash">
+        <!-- LOGO HERO EN DASHBOARD -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px">
+          <img id="gymLogo" src="" style="
+  width:60px;
+  height:60px;
+  object-fit:contain;
+  border-radius:10px;
+  background:#111;
+  padding:5px;
+">
+          <div>
+            <div id="gymTitle" style="font-family:var(--font-d);font-size:20px;letter-spacing:2px">EVOLUTION FITNESS</div>
+            <div style="font-size:11px;color:var(--muted)">Sistema de Gestión · Hoy 23/03/2025</div>
+          </div>
+          <div style="margin-left:auto"><span class="badge bg">● En línea</span></div>
+        </div>
+        <div class="sg sg4">
+          <div class="sc sc-w"><div class="sc-label">Socios Activos</div><div class="sc-val sv-w">248</div><div class="sc-delta dg">+12 este mes</div></div>
+          <div class="sc sc-r"><div class="sc-label">Ingresos Hoy</div><div class="sc-val sv-r">47</div><div class="sc-delta">entradas</div></div>
+          <div class="sc sc-g"><div class="sc-label">Recaudado</div><div class="sc-val sv-g">$186k</div><div class="sc-delta dg">+8% vs ant.</div></div>
+          <div class="sc sc-y"><div class="sc-label">Alertas</div><div class="sc-val sv-y">5</div><div class="sc-delta">vencen esta semana</div></div>
+        </div>
+
+        <!-- SEMAPHORE ALERT PANEL -->
+        <div class="card" style="border-color:rgba(224,31,38,.25)">
+          <div class="card-header"><div class="card-title">🚦 Semáforo de Socios</div><span style="font-size:10px;color:var(--muted)">Estado actual</span></div>
+          <div class="card-body" style="padding:12px">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">
+              <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+                <span class="sema sema-g" style="width:12px;height:12px"></span>
+                <div><div style="font-family:var(--font-d);font-size:20px;color:var(--green)">218</div><div style="font-size:10px;color:var(--muted)">Al día (+7 días)</div></div>
+              </div>
+              <div style="background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+                <span class="sema sema-y" style="width:12px;height:12px"></span>
+                <div><div style="font-family:var(--font-d);font-size:20px;color:var(--gold)">12</div><div style="font-size:10px;color:var(--muted)">Vence en 1-7 días</div></div>
+              </div>
+              <div style="background:rgba(255,107,0,.08);border:1px solid rgba(255,107,0,.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+                <span class="sema sema-o" style="width:12px;height:12px"></span>
+                <div><div style="font-family:var(--font-d);font-size:20px;color:var(--orange)">5</div><div style="font-size:10px;color:var(--muted)">Vence hoy/mañana</div></div>
+              </div>
+              <div style="background:rgba(224,31,38,.08);border:1px solid rgba(224,31,38,.2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+                <span class="sema sema-r" style="width:12px;height:12px"></span>
+                <div><div style="font-family:var(--font-d);font-size:20px;color:var(--red)">13</div><div style="font-size:10px;color:var(--muted)">Vencido</div></div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm btn-full" onclick="notify('Enviando alertas a socios por WhatsApp...')">📲 Notificar vencimientos por WhatsApp</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Últimos Ingresos</div></div>
+          <div class="act-list">
+            <div class="act-item"><span class="sema sema-g"></span><div class="act-info"><div class="act-name">Martín López</div><div class="act-sub">Plan 3 días · 2 restantes</div></div><div class="act-time">09:47</div></div>
+            <div class="act-item"><span class="sema sema-g"></span><div class="act-info"><div class="act-name">Sofía Ramírez</div><div class="act-sub">Plan Semana · 4 restantes</div></div><div class="act-time">09:31</div></div>
+            <div class="act-item"><span class="sema sema-r"></span><div class="act-info"><div class="act-name">Ana Fernández</div><div class="act-sub">⚠ Plan vencido — acceso denegado</div></div><div class="act-time">09:08</div></div>
+            <div class="act-item"><span class="sema sema-y"></span><div class="act-info"><div class="act-name">Carlos Méndez</div><div class="act-sub">Plan Semana · vence mañana</div></div><div class="act-time">08:55</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: SOCIOS -->
+      <div class="view" id="gv-socios">
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <input class="fi" style="flex:1" placeholder="🔍 Buscar socio...">
+          <button class="btn btn-primary btn-sm" onclick="openModal('newClientModal')">+ Agregar</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Socio</th><th>Plan</th><th>Días Rest.</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="font-weight:500">Martín López</div><div style="font-size:10px;color:var(--muted)">DNI 30.456.789 · 📱 1134567890</div></td>
+                  <td><span class="badge br">3 Días</span></td>
+                  <td><span style="font-family:var(--font-m);color:var(--gold)">2 / 3</span></td>
+                  <td style="font-family:var(--font-m);font-size:11px">29/03/25</td>
+                  <td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-g"></span><span class="badge bg" style="font-size:9px">OK</span></div></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="openModal('qrModal')">QR</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Sofía Ramírez</div><div style="font-size:10px;color:var(--muted)">DNI 35.123.456 · 📱 1156789012</div></td>
+                  <td><span class="badge bw">Semana</span></td>
+                  <td><span style="font-family:var(--font-m);color:var(--green)">4 / 7</span></td>
+                  <td style="font-family:var(--font-m);font-size:11px">28/03/25</td>
+                  <td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-g"></span><span class="badge bg" style="font-size:9px">OK</span></div></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="openModal('qrModal')">QR</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Ana Fernández</div><div style="font-size:10px;color:var(--muted)">DNI 28.789.012</div></td>
+                  <td><span class="badge bw">Semana</span></td>
+                  <td><span style="font-family:var(--font-m);color:var(--red)">0 / 7</span></td>
+                  <td style="font-family:var(--font-m);font-size:11px;color:var(--red)">20/03/25</td>
+                  <td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-r"></span><span class="badge br" style="font-size:9px">Vencido</span></div></td>
+                  <td><button class="btn btn-primary btn-sm" onclick="notify('Renovando...')">Renovar</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Carlos Méndez</div><div style="font-size:10px;color:var(--muted)">DNI 32.567.890</div></td>
+                  <td><span class="badge bw">Semana</span></td>
+                  <td><span style="font-family:var(--font-m);color:var(--gold)">1 / 7</span></td>
+                  <td style="font-family:var(--font-m);font-size:11px;color:var(--orange)">24/03/25</td>
+                  <td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-o"></span><span class="badge bo" style="font-size:9px">Pronto</span></div></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="notify('Enviando recordatorio...')">📲</button></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Diego Torres</div><div style="font-size:10px;color:var(--muted)">DNI 40.234.567</div></td>
+                  <td><span class="badge bw">Semana</span></td>
+                  <td><span style="font-family:var(--font-m);color:var(--green)">6 / 7</span></td>
+                  <td style="font-family:var(--font-m);font-size:11px">01/04/25</td>
+                  <td><div style="display:flex;align-items:center;gap:5px"><span class="sema sema-g"></span><span class="badge bg" style="font-size:9px">OK</span></div></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="openModal('qrModal')">QR</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:8px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">
+            🟢 Al día &nbsp;🟡 Vence pronto &nbsp;🟠 Vence hoy/mañana &nbsp;🔴 Vencido
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: QR ACCESO -->
+      <div class="view" id="gv-qr">
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header"><div class="card-title">Escáner QR de Entrada</div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;padding:22px 16px;gap:14px">
+            <div class="scan-frame"><div class="scan-line"><div class="scan-beam"></div></div><span style="font-size:30px;opacity:.3">📷</span></div>
+            <p style="font-size:12px;color:var(--muted);text-align:center">El socio escanea el QR general pegado en la entrada<br>o mostrá tu QR personal en la pantalla</p>
+            <button class="btn btn-primary" onclick="simulateScan()">▶ Simular Escaneo</button>
+            <div id="scanResult" style="display:none;background:var(--s2);border-radius:12px;padding:14px;text-align:center;width:100%;animation:fadeUp .3s">
+              <div style="font-size:20px;margin-bottom:4px" id="scanIcon">✅</div>
+              <div id="scanName" style="font-family:var(--font-d);font-size:22px"></div>
+              <div id="scanInfo" style="font-size:11px;color:var(--muted);margin:4px 0 8px"></div>
+              <div id="scanBadge"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">QR General — Imprimir en Entrada</div><button class="btn btn-primary btn-sm" onclick="notify('Abriendo para imprimir...')">🖨️ Imprimir</button></div>
+          <div style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px">
+            <svg style="background:#fff;border-radius:8px;padding:8px;display:block" width="130" height="130" viewBox="0 0 21 21">
+              <rect x="0" y="0" width="7" height="7" rx="1" fill="#000"/><rect x="1" y="1" width="5" height="5" fill="white"/><rect x="2" y="2" width="3" height="3" fill="#000"/>
+              <rect x="14" y="0" width="7" height="7" rx="1" fill="#000"/><rect x="15" y="1" width="5" height="5" fill="white"/><rect x="16" y="2" width="3" height="3" fill="#000"/>
+              <rect x="0" y="14" width="7" height="7" rx="1" fill="#000"/><rect x="1" y="15" width="5" height="5" fill="white"/><rect x="2" y="16" width="3" height="3" fill="#000"/>
+              <rect x="9" y="0" width="1" height="1" fill="#000"/><rect x="11" y="0" width="2" height="1" fill="#000"/>
+              <rect x="8" y="2" width="2" height="2" fill="#000"/><rect x="11" y="2" width="1" height="1" fill="#000"/>
+            </svg>
+            <div style="font-family:var(--font-d);font-size:16px;letter-spacing:2px">EVOLUTION FITNESS</div>
+            <div style="font-size:11px;color:var(--muted);text-align:center">Escaneá al entrar para registrar tu asistencia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: PAGOS -->
+      <div class="view" id="gv-pagos">
+        <div class="sg sg3">
+          <div class="sc sc-g"><div class="sc-label">Cobrado</div><div class="sc-val sv-g" style="font-size:22px">$186k</div></div>
+          <div class="sc sc-r"><div class="sc-label">Pendiente</div><div class="sc-val sv-r" style="font-size:22px">$24k</div></div>
+          <div class="sc sc-w"><div class="sc-label">Proyectado</div><div class="sc-val sv-w" style="font-size:22px">$210k</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Últimos Pagos</div><button class="btn btn-primary btn-sm" onclick="openModal('pagoModal')">+ Pago</button></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Socio</th><th>Plan</th><th>Monto</th><th>Método</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Martín López</td><td>3 Días</td><td style="font-family:var(--font-m)">$4.500</td><td><span class="badge bb">Efectivo</span></td><td><span class="badge bg">✓</span></td></tr>
+                <tr><td>Diego Torres</td><td>Semana</td><td style="font-family:var(--font-m)">$8.500</td><td><span class="badge bp">Transfer.</span></td><td><span class="badge bg">✓</span></td></tr>
+                <tr><td>Ana Fernández</td><td>Semana</td><td style="font-family:var(--font-m)">$8.500</td><td>—</td><td><span class="badge br">Pendiente</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: PLANES -->
+      <div class="view" id="gv-planes">
+        <div class="plan-card">
+          <div class="plan-name">3 DÍAS</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">3 ingresos por semana — los no usados acumulan</div>
+          <div class="plan-price">$4.500</div>
+          <ul class="plan-feats"><li>3 ingresos semanales</li><li>QR personal generado</li><li>Días no usados → próxima semana</li></ul>
+          <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="openModal('editPlanModal')">✏️ Editar</button><button class="btn btn-danger btn-sm" onclick="notify('¿Confirmar?')">🗑</button></div>
+        </div>
+        <div class="plan-card feat">
+          <div class="plan-badge">POPULAR</div>
+          <div class="plan-name">SEMANA COMPLETA</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">7 ingresos por semana — días acumulables</div>
+          <div class="plan-price">$8.500</div>
+          <ul class="plan-feats"><li>7 ingresos semanales</li><li>QR personal generado</li><li>Días no usados → próxima semana</li><li>Alertas de vencimiento</li></ul>
+          <div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" style="flex:1" onclick="openModal('editPlanModal')">✏️ Editar</button><button class="btn btn-danger btn-sm" onclick="notify('Plan principal, no se puede eliminar')">🗑</button></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="openModal('editPlanModal')">+ Crear Nuevo Plan</button>
+        <div style="margin-top:12px;padding:12px;background:var(--s2);border-radius:8px;border:1px solid var(--border);font-size:11px;color:var(--muted)">
+          💡 <strong style="color:var(--text)">Acumulación:</strong> Si un socio del plan 3 días solo asistió 2 veces esa semana, el día restante suma automáticamente a la siguiente semana hasta completar el plan.
+        </div>
+      </div>
+
+      <!-- GV: CAJA -->
+      <div class="view" id="gv-caja">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Caja del Día</div><span style="font-family:var(--font-m);font-size:10px;color:var(--muted)">23/03/2025</span></div>
+          <div class="card-body">
+            <div class="cash-row"><div class="cash-lbl">Efectivo</div><div class="cash-amt" style="color:var(--green)">+ $34.000</div></div>
+            <div class="cash-row"><div class="cash-lbl">Transferencias</div><div class="cash-amt" style="color:var(--blue)">+ $17.000</div></div>
+            <div class="cash-row"><div class="cash-lbl">Gastos</div><div class="cash-amt" style="color:var(--red)">− $8.500</div></div>
+            <div class="cash-row" style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px">
+              <div class="cash-lbl" style="color:var(--text);font-weight:600;font-size:14px">Total del día</div>
+              <div class="cash-amt" style="font-size:20px;color:var(--gym-accent)">$42.500</div>
+            </div>
+            <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="notify('Caja cerrada. Resumen guardado.')">Cerrar Caja del Día</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: FLYER IA -->
+      <div class="view" id="gv-flyer">
+        <div class="ai-box">
+          <div class="ai-title">✨ Flyer con IA</div>
+          <div class="ai-sub">Describí tu promo y la IA crea el diseño listo para compartir</div>
+          <div class="fg"><textarea class="fta" id="flyerPrompt" rows="2" placeholder="Ej: Promo verano, inscripción gratis, descuento 50%..."></textarea></div>
+          <div class="fr fr2">
+            <div><label class="fl">Plantilla</label><select class="fsel" onchange="updateFlyer()"><option>Promo Inscripción</option><option>Descuento Especial</option><option>Evento / Clase</option><option>Novedad del Gym</option></select></div>
+            <div><label class="fl">Estilo</label><select class="fsel" onchange="updateFlyer()"><option>Energético Rojo</option><option>Oscuro Premium</option><option>Naranja Vibrante</option></select></div>
+          </div>
+          <button class="btn btn-sm btn-full" style="background:var(--purple);color:#fff" onclick="generateFlyer()">✨ Generar Flyer con IA</button>
+        </div>
+        <div class="flyer-wrap" id="flyerWrap">
+          <div style="font-size:26px;margin-bottom:8px;position:relative">💪</div>
+          <div class="fy-name">EVOLUTION FITNESS</div>
+          <div class="fy-text" id="flyerText">¡INSCRIPCIÓN GRATIS EN ABRIL!<br>Sumate al cambio hoy mismo</div>
+          <div class="fy-tag">📍 Av. Siempreviva 742 · @evolutionfitness</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:2px">
+          <button class="sb sb-wa" onclick="notify('✅ Abriendo WhatsApp...')"><span>💬</span>Compartir por WhatsApp</button>
+          <button class="sb sb-ig" onclick="notify('✅ Preparando para Instagram...')"><span>📸</span>Publicar en Instagram</button>
+          <button class="sb sb-fb" onclick="notify('✅ Compartiendo en Facebook...')"><span>👍</span>Publicar en Facebook</button>
+          <button class="btn btn-ghost btn-full" onclick="notify('Descargando...')">↓ Descargar imagen</button>
+        </div>
+      </div>
+
+      <!-- GV: LINKS -->
+      <div class="view" id="gv-links">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📲 Link para Clientes</div></div>
+          <div class="card-body">
+            <div class="link-box">
+              <div class="link-txt" style="color:var(--blue)">gymmaster.app/registro/evolution-fitness</div>
+              <button class="btn btn-primary btn-sm" onclick="notify('✅ Link copiado!')">Copiar</button>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Compartí este link. Cuando el cliente se registra, lo ves aquí al instante.</p>
+            <div style="display:flex;gap:8px">
+              <button class="sb sb-wa" style="flex:1" onclick="notify('Enviando por WhatsApp...')"><span>💬</span>Enviar WA</button>
+              <button class="btn btn-primary btn-sm" onclick="showClientReg()">👁 Ver form</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">👤 Link para Encargados</div></div>
+          <div class="card-body">
+            <div class="link-box">
+              <div class="link-txt" style="color:var(--purple)">gymmaster.app/encargado/evolution-fitness</div>
+              <button class="btn btn-ghost btn-sm" onclick="notify('✅ Link copiado!')">Copiar</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🟢 Registros en Tiempo Real</div><span class="badge bg" style="font-size:9px">● LIVE</span></div>
+          <div class="act-list">
+            <div class="act-item"><div class="act-dot ad-b"></div><div class="act-info"><div class="act-name">Lucas Pereyra — DNI 42.111.333</div><div class="act-sub">Plan Semana · Tel: 1145678900 · hace 12 min</div></div></div>
+            <div class="act-item"><div class="act-dot ad-b"></div><div class="act-info"><div class="act-name">Valentina Suárez — DNI 38.777.222</div><div class="act-sub">Plan 3 Días · Tel: 1167890011 · hace 45 min</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: ENCARGADOS -->
+      <div class="view" id="gv-encargados">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Encargados</div><button class="btn btn-primary btn-sm" onclick="openModal('encargadoModal')">+ Agregar</button></div>
+          <div class="act-list">
+            <div class="act-item"><div class="ava" style="width:34px;height:34px;font-size:11px">MR</div><div class="act-info"><div class="act-name">María Rodríguez</div><div class="act-sub">Turno mañana · registro + cobros</div></div><div style="display:flex;gap:5px"><span class="badge bg">Activo</span><button class="btn btn-danger btn-sm" onclick="notify('Encargado eliminado')">🗑</button></div></div>
+            <div class="act-item"><div class="ava" style="width:34px;height:34px;font-size:11px;background:var(--s3)">PG</div><div class="act-info"><div class="act-name">Pedro Gómez</div><div class="act-sub">Turno tarde · registro + cobros</div></div><div style="display:flex;gap:5px"><span class="badge bg">Activo</span><button class="btn btn-danger btn-sm" onclick="notify('Encargado eliminado')">🗑</button></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GV: HISTORIAL -->
+      <div class="view" id="gv-historial">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Historial de Asistencia</div><button class="btn btn-ghost btn-sm" onclick="notify('Exportando...')">↓ CSV</button></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Socio</th><th>Fecha</th><th>Hora</th><th>Plan</th><th>Días R.</th><th>Est.</th></tr></thead>
+              <tbody>
+                <tr><td>Martín López</td><td style="font-family:var(--font-m);font-size:11px">23/03</td><td style="font-family:var(--font-m);font-size:11px">09:47</td><td>3 Días</td><td><span style="font-family:var(--font-m);color:var(--gold)">2</span></td><td><span class="sema sema-g"></span></td></tr>
+                <tr><td>Sofía Ramírez</td><td style="font-family:var(--font-m);font-size:11px">23/03</td><td style="font-family:var(--font-m);font-size:11px">09:31</td><td>Semana</td><td><span style="font-family:var(--font-m);color:var(--green)">4</span></td><td><span class="sema sema-g"></span></td></tr>
+                <tr><td>Ana Fernández</td><td style="font-family:var(--font-m);font-size:11px">23/03</td><td style="font-family:var(--font-m);font-size:11px">09:08</td><td>Semana</td><td><span style="font-family:var(--font-m);color:var(--red)">0</span></td><td><span class="sema sema-r"></span></td></tr>
+                <tr><td>Carlos Méndez</td><td style="font-family:var(--font-m);font-size:11px">23/03</td><td style="font-family:var(--font-m);font-size:11px">08:55</td><td>Semana</td><td><span style="font-family:var(--font-m);color:var(--gold)">1</span></td><td><span class="sema sema-o"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ████ ENCARGADO ████ -->
+<div class="screen" id="encargadoScreen">
+  <div class="topbar">
+    <div class="tb-title" style="flex:1;font-size:16px">ENCARGADO — EVOLUTION FITNESS</div>
+    <button class="btn btn-ghost btn-sm" onclick="goTo('roleScreen')">← Salir</button>
+  </div>
+  <div class="mc" style="display:flex;flex-direction:column;gap:12px;max-width:460px;margin:0 auto;width:100%;padding:16px">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s1);border:1px solid var(--border);border-radius:12px">
+      <img src="">
+      <div><div style="font-family:var(--font-d);font-size:18px;letter-spacing:2px">EVOLUTION FITNESS</div><div style="font-size:11px;color:var(--muted)">María Rodríguez · Turno mañana</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-primary" style="padding:20px;flex-direction:column;gap:6px;height:80px;justify-content:center" onclick="openModal('newClientModal')"><span style="font-size:22px">👤</span>Registrar Socio</button>
+      <button class="btn" style="padding:20px;flex-direction:column;gap:6px;height:80px;background:var(--s2);border:1px solid var(--border);color:var(--text);justify-content:center" onclick="openModal('pagoModal')"><span style="font-size:22px">💳</span>Registrar Pago</button>
+    </div>
+    <div class="card"><div class="card-header"><div class="card-title">Últimos Registros</div></div>
+      <div class="act-list">
+        <div class="act-item"><div class="act-dot ad-g"></div><div class="act-info"><div class="act-name">Lucas Pereyra</div><div class="act-sub">Plan Semana · hace 12 min</div></div></div>
+        <div class="act-item"><div class="act-dot ad-b"></div><div class="act-info"><div class="act-name">Valentina Suárez — Pago</div><div class="act-sub">$8.500 Efectivo</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ REGISTRO CLIENTE (público) ████ -->
+<div id="clientRegScreen" style="display:none;position:fixed;inset:0;z-index:800;background:var(--bg);overflow-y:auto">
+  <div style="background:linear-gradient(180deg,rgba(224,31,38,.2),transparent);padding:28px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <img src=""> 
+    <div style="font-family:var(--font-d);font-size:26px;letter-spacing:3px;color:#fff">EVOLUTION FITNESS</div>
+    <div style="font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase">Formulario de Registro</div>
+  </div>
+  <div style="max-width:460px;margin:0 auto;padding:0 16px 24px">
+    <div class="card">
+      <div class="card-body">
+        <div class="fr fr2">
+          <div class="fg"><label class="fl">Nombre</label><input class="fi" placeholder="Juan"></div>
+          <div class="fg"><label class="fl">Apellido</label><input class="fi" placeholder="García"></div>
+        </div>
+        <div class="fr fr2">
+          <div class="fg"><label class="fl">DNI</label><input class="fi" placeholder="12.345.678"></div>
+          <div class="fg"><label class="fl">Fecha de Nac.</label><input class="fi" type="date"></div>
+        </div>
+        <div class="fg"><label class="fl">WhatsApp</label><input class="fi" placeholder="+54 11 1234-5678"></div>
+        <div class="fg"><label class="fl">Foto de Perfil</label>
+          <div style="border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px" onclick="notify('Abriendo cámara/galería...')">📷 Tocar para agregar foto</div>
+        </div>
+        <div class="fg"><label class="fl">Elegí tu Plan</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div id="crp1" class="plan-card" style="margin:0;cursor:pointer;padding:14px" onclick="selectRegPlan(1)">
+              <div class="plan-name" style="font-size:16px">3 DÍAS</div>
+              <div class="plan-price" style="font-size:22px">$4.500</div>
+              <div style="font-size:10px;color:var(--muted)">3 ingresos/semana</div>
+            </div>
+            <div id="crp2" class="plan-card feat" style="margin:0;cursor:pointer;padding:14px" onclick="selectRegPlan(2)">
+              <div class="plan-badge" style="font-size:8px">POP.</div>
+              <div class="plan-name" style="font-size:16px">SEMANA</div>
+              <div class="plan-price" style="font-size:22px">$8.500</div>
+              <div style="font-size:10px;color:var(--muted)">7 ingresos/semana</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-full" onclick="registerClient()">✅ REGISTRARME</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="hideClientReg()">← Volver</button>
+  </div>
+</div>
+
+<!-- ████ MODALS ████ -->
+
+<!-- QR -->
+<div class="modal" id="gymQRModal">
+  <div class="modal-box" style="max-width:300px;text-align:center">
+    <div class="modal-header">
+      <div class="modal-title">🔑 QR DE ACCESO DEL DUEÑO</div>
+      <button class="modal-close" onclick="closeModal('gymQRModal')">✕</button>
+    </div>
+
+    <div class="modal-body" style="text-align:center">
+      <canvas id="qrCanvas"></canvas>
+
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+        Escaneá para abrir la app del gimnasio
+      </div>
+
+      <button class="btn btn-full" style="margin-top:10px" onclick="closeModal('gymQRModal')">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Cambiar clave - solo via Master -->
+<div class="modal" id="changePassModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header"><div class="modal-title">🔑 CAMBIAR CONTRASEÑA</div><button class="modal-close" onclick="closeModal('changePassModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:40px;margin-bottom:10px">🔐</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">¿Querés cambiar tu contraseña?</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">Contactá al <strong style="color:var(--gold)">Administrador del sistema</strong> y te generará una nueva contraseña.</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Contactar Administrador</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="sb sb-wa" onclick="notify('Abriendo WhatsApp con el administrador...');closeModal('changePassModal')">
+            <span>💬</span> Contactar por WhatsApp
+          </button>
+          <button class="btn btn-ghost btn-full" onclick="notify('Abriendo email...');closeModal('changePassModal')">
+            📧 Enviar email al administrador
+          </button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);text-align:center">
+        El administrador verificará tu identidad y te enviará la nueva contraseña.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Olvidé contraseña Master -->
+<div class="modal" id="forgotMasterModal">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">RECUPERAR ACCESO</div><button class="modal-close" onclick="closeModal('forgotMasterModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Email registrado</label><input class="fi" placeholder="admin@gymmaster.app"></div>
+      <button class="btn btn-gold btn-full" onclick="notify('📧 Link de recuperación enviado al email');closeModal('forgotMasterModal')">Enviar Link de Recuperación</button>
+    </div>
+  </div>
+</div>
+
+<!-- Olvidé contraseña Gym -->
+<div class="modal" id="forgotGymModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header"><div class="modal-title">🔑 OLVIDÉ MI CONTRASEÑA</div><button class="modal-close" onclick="closeModal('forgotGymModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:44px;margin-bottom:10px">🔒</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">No podés recuperarla vos mismo</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">Por seguridad, solo el <strong style="color:var(--gold)">Administrador del sistema</strong> puede generarte una nueva contraseña.</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Contactar Administrador</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="sb sb-wa" onclick="notify('Abriendo WhatsApp con el administrador...');closeModal('forgotGymModal')">
+            <span>💬</span> Contactar por WhatsApp
+          </button>
+          <button class="btn btn-ghost btn-full" onclick="notify('Abriendo email al administrador...');closeModal('forgotGymModal')">
+            📧 Enviar email al administrador
+          </button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);text-align:center">
+        El administrador verificará tu identidad y te enviará una nueva contraseña temporal.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo Cliente -->
+<div class="modal" id="newClientModal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">NUEVO SOCIO</div><button class="modal-close" onclick="closeModal('newClientModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fr fr2">
+        <div class="fg"><label class="fl">Nombre</label><input class="fi" placeholder="Nombre"></div>
+        <div class="fg"><label class="fl">Apellido</label><input class="fi" placeholder="Apellido"></div>
+      </div>
+      <div class="fr fr2">
+        <div class="fg"><label class="fl">DNI</label><input class="fi" placeholder="12.345.678"></div>
+        <div class="fg"><label class="fl">WhatsApp</label><input class="fi" placeholder="+54 11..."></div>
+      </div>
+      <div class="fg"><label class="fl">Plan</label><select class="fsel"><option>Plan 3 Días — $4.500</option><option>Plan Semana Completa — $8.500</option></select></div>
+      <div class="fg"><label class="fl">Método de Pago</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button id="pe" class="btn btn-primary btn-sm" onclick="selPago('e')" style="justify-content:center">💵 Efectivo</button>
+          <button id="pt" class="btn btn-ghost btn-sm" onclick="selPago('t')" style="justify-content:center">📲 Transferencia</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="notify('✅ Socio registrado! QR generado y enviado por WhatsApp.');closeModal('newClientModal')">✅ Registrar y Generar QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pago -->
+<div class="modal" id="pagoModal">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">REGISTRAR PAGO</div><button class="modal-close" onclick="closeModal('pagoModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Socio</label><input class="fi" placeholder="Buscar..."></div>
+      <div class="fg"><label class="fl">Plan</label><select class="fsel"><option>3 Días — $4.500</option><option>Semana — $8.500</option></select></div>
+      <div class="fg"><label class="fl">Método</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn-primary btn-sm" style="justify-content:center">💵 Efectivo</button>
+          <button class="btn btn-ghost btn-sm" style="justify-content:center">📲 Transferencia</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="notify('✅ Pago registrado');closeModal('pagoModal')">Confirmar Pago</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editar Plan -->
+<div class="modal" id="editPlanModal">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">EDITAR PLAN</div><button class="modal-close" onclick="closeModal('editPlanModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Nombre</label><input class="fi" value="Semana Completa"></div>
+      <div class="fr fr2">
+        <div class="fg"><label class="fl">Días acceso</label><input class="fi" type="number" value="7"></div>
+        <div class="fg"><label class="fl">Precio $</label><input class="fi" value="8500"></div>
+      </div>
+      <div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted)"><input type="checkbox" checked> Acumular días no usados a semana siguiente</label></div>
+      <button class="btn btn-primary btn-full" onclick="notify('✅ Plan actualizado');closeModal('editPlanModal')">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Encargado -->
+<div class="modal" id="encargadoModal">
+  <div class="modal-box" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">AGREGAR ENCARGADO</div><button class="modal-close" onclick="closeModal('encargadoModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fr fr2">
+        <div class="fg"><label class="fl">Nombre</label><input class="fi" placeholder="Nombre"></div>
+        <div class="fg"><label class="fl">Apellido</label><input class="fi" placeholder="Apellido"></div>
+      </div>
+      <div class="fg"><label class="fl">WhatsApp / Email</label><input class="fi" placeholder="Para enviarle acceso"></div>
+      <div class="fg"><label class="fl">Turno</label><select class="fsel"><option>Mañana</option><option>Tarde</option><option>Noche</option><option>Completo</option></select></div>
+      <button class="btn btn-primary btn-full" onclick="notify('✅ Encargado agregado. Link enviado por WhatsApp.');closeModal('encargadoModal')">Agregar y Enviar Acceso</button>
+    </div>
+  </div>
+</div>
+
+<!-- Crear Gym Modal (acceso rapido) -->
+<div class="modal" id="newGymModal">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header"><div class="modal-title">✨ NUEVO GIMNASIO</div><button class="modal-close" onclick="closeModal('newGymModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="ai-box" style="margin-bottom:12px">
+        <div class="ai-title" style="font-size:14px">Diseño con IA</div>
+        <input class="fi" style="margin-top:8px" placeholder="Describí el gym para la IA...">
+        <button class="btn btn-sm btn-full" style="background:var(--purple);color:#fff;margin-top:8px" onclick="notify('✨ Generando diseño...')">✨ Generar</button>
+      </div>
+      <div class="fr fr2">
+        <div class="fg"><label class="fl">Nombre</label><input class="fi" placeholder="Nombre del gym"></div>
+        <div class="fg"><label class="fl">Email dueño</label><input class="fi" placeholder="email@gym.com"></div>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="createGym(); closeModal('newGymModal')">
+🚀 Crear y Generar Link
+</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS REGISTRO -->
+<div class="modal" id="successModal">
+  <div class="modal-box" style="max-width:300px">
+    <div class="modal-header" style="border-color:var(--green)"><div class="modal-title" style="color:var(--green)">✅ REGISTRO OK</div><button class="modal-close" onclick="closeModal('successModal')">✕</button></div>
+    <div class="modal-body" style="text-align:center">
+      <div style="font-size:44px;margin-bottom:8px">🎉</div>
+      <div style="font-family:var(--font-d);font-size:22px;margin-bottom:6px">¡BIENVENIDO/A!</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Tu QR personal fue generado.<br>Te lo enviamos por WhatsApp.</div>
+      <svg style="background:#fff;border-radius:8px;padding:8px;display:block;margin:0 auto 12px" width="120" height="120" viewBox="0 0 21 21">
+        <rect x="0" y="0" width="7" height="7" rx="1" fill="#000"/><rect x="1" y="1" width="5" height="5" fill="white"/><rect x="2" y="2" width="3" height="3" fill="#000"/>
+        <rect x="14" y="0" width="7" height="7" rx="1" fill="#000"/><rect x="15" y="1" width="5" height="5" fill="white"/><rect x="16" y="2" width="3" height="3" fill="#000"/>
+        <rect x="0" y="14" width="7" height="7" rx="1" fill="#000"/><rect x="1" y="15" width="5" height="5" fill="white"/><rect x="2" y="16" width="3" height="3" fill="#000"/>
+      </svg>
+      <button class="sb sb-wa" onclick="notify('Enviando QR por WA...');closeModal('successModal')"><span>💬</span>Recibir QR por WhatsApp</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="gymQRModal">
+  <div class="modal-box" style="max-width:300px;text-align:center">
+    <div style="font-size:18px;margin-bottom:10px">
+      📱 QR de acceso al Gym
+    </div>
+
+    <canvas id="qrCanvas"></canvas>
+
+    <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+      Escaneá para abrir tu app
+    </div>
+
+    <button class="btn btn-full" style="margin-top:10px" onclick="closeModal('gymQRModal')"
+      Cerrar
+    </button>
+  </div>
+</div>
+<!-- Gym Edit Modal Master -->
+<div class="modal" id="gymEditModal">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">EDITAR GYM</div><button class="modal-close" onclick="closeModal('gymEditModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="ai-box" style="margin-bottom:12px">
+        <div class="ai-title" style="font-size:14px">✨ Rediseño con IA</div>
+        <div class="fg" style="margin-top:8px">
+          <label class="fl">Subir nuevo Logo</label>
+          <div class="upload-area" onclick="notify('Seleccionando archivo...')">
+            <div style="font-size:24px;margin-bottom:4px">📁</div>
+            <div style="font-size:12px">Subir logo PNG / JPG</div>
+          </div>
+        </div>
+        <input class="fi" style="margin-top:8px" placeholder="Describí el nuevo estilo...">
+        <button class="btn btn-sm btn-full" style="background:var(--purple);color:#fff;margin-top:8px" onclick="notify('✨ Aplicando nuevo diseño...')">Aplicar Diseño IA</button>
+      </div>
+      <div class="fg"><label class="fl">Color Principal</label>
+        <div class="color-row">
+          <div class="cdot on" style="background:#e01f26" onclick="pickColorEdit('#e01f26',this)"></div>
+          <div class="cdot" style="background:#ff6b00" onclick="pickColorEdit('#ff6b00',this)"></div>
+          <div class="cdot" style="background:#f5c518" onclick="pickColorEdit('#f5c518',this)"></div>
+          <div class="cdot" style="background:#00c9a7" onclick="pickColorEdit('#00c9a7',this)"></div>
+          <div class="cdot" style="background:#a855f7" onclick="pickColorEdit('#a855f7',this)"></div>
+        </div>
+      </div>
+      <div class="fr fr2">
+        <div><label class="fl">Estado</label><select class="fsel"><option>Activo</option><option>Suspendido</option></select></div>
+        <div><label class="fl">Suscripción</label><select class="fsel"><option>Mensual $15k</option><option>Trimestral $40k</option></select></div>
+      </div>
+      <div style="background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.2);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:8px">🔑 Gestión de Acceso del Dueño</div>
+        <div class="fr fr2" style="margin-bottom:8px">
+          <div class="fg" style="margin:0"><label class="fl">Nueva Contraseña</label><input class="fi" type="password" placeholder="Nueva clave temporal"></div>
+          <div class="fg" style="margin:0"><label class="fl">Confirmar</label><input class="fi" type="password" placeholder="Repetir"></div>
+        </div>
+        <button class="btn btn-gold btn-sm btn-full" onclick="notify('✅ Nueva contraseña generada y enviada al dueño por WhatsApp')">🔑 Generar y Enviar Nueva Contraseña</button>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="notify('✅ Cambios guardados');closeModal('gymEditModal')">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ══ NAVIGATION ══
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.classList.add('fadeUp');
+  setTimeout(()=>el.classList.remove('fadeUp'),400);
+}
+
+// ══ LOGIN ══
+let remMaster=false, remGym=false;
+function togglePass(inputId){
+  const el=document.getElementById(inputId);
+  if(el) el.type=el.type==='password'?'text':'password';
+}
+function toggleChk(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('on');
+  if(id==='mChk') remMaster=el.classList.contains('on');
+  else remGym=el.classList.contains('on');
+}
+function doMasterLogin(){
+  const u=document.getElementById('mUser').value.trim();
+  const p=document.getElementById('mPass').value;
+  if(!u||!p){notify('⚠ Completá usuario y contraseña');return}
+  const ls=document.getElementById('masterLoginScreen');
+  ls.style.transition='opacity .4s'; ls.style.opacity='0';
+  setTimeout(()=>{ls.style.opacity='1';ls.style.transition='none';goTo('masterScreen')},400);
+}
+function doGymLogin(){
+  const u=document.getElementById('gUser').value.trim();
+  const p=document.getElementById('gPass').value;
+  if(!u||!p){notify('⚠ Completá usuario y contraseña');return}
+  goTo('gymScreen');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const active=document.querySelector('.screen.active');
+  if(!active) return;
+  if(active.id==='masterLoginScreen') doMasterLogin();
+  else if(active.id==='gymLoginScreen') doGymLogin();
+});
+
+// ══ SIDEBAR ══
+function toggleSB(sb,ham,ov){
+  const o=document.getElementById(sb).classList.toggle('open');
+  document.getElementById(ham).classList.toggle('open',o);
+  document.getElementById(ov).classList.toggle('show',o);
+}
+function closeSB(sb,ham,ov){
+  document.getElementById(sb).classList.remove('open');
+  document.getElementById(ham).classList.remove('open');
+  document.getElementById(ov).classList.remove('show');
+}
+
+// ══ VIEWS ══
+function showMV(id,el,title){
+  document.querySelectorAll('#masterScreen .view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('#mSB .nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('mTitle').textContent=title;
+  closeSB('mSB','mHam','mOv');
+}
+function openGym(nombre, email, logo = ""){
+  localStorage.setItem("gymNombreActivo", nombre);
+  localStorage.setItem("gymEmailActivo", email);
+  localStorage.setItem("gymLogoActivo", logo || "");
+
+  goTo("gymScreen");
+  loadActiveGym();
+  showGV("gv-dash", null, nombre, "+ Nuevo");
+}
+function loadActiveGym(){
+  const nombre = localStorage.getItem("gymNombreActivo");
+const email = localStorage.getItem("gymEmailActivo");
+const logo = localStorage.getItem("gymLogoActivo") || "";
+const gymLogoSidebar = document.getElementById("gymLogoSidebar");
+const gymLoginLogo = document.getElementById("gymLoginLogo");
+
+if(gymLoginLogo && logo){
+  gymLoginLogo.src = logo;
+  gymLoginLogo.style.display = "block";
+}
+const gymScreen = document.getElementById("gymScreen");
+
+if(gymScreen && gymLogoSidebar && logo){
+  gymLogoSidebar.src = logo;
+  gymLogoSidebar.style.display = "block";
+}
+
+console.log("Gym activo cargado ✅", nombre, email);
+
+  const gymLogo = document.getElementById("gymLogo");
+
+  if(gymLogo){
+  gymLogo.src = logo || "";
+}
+
+  if(nombre){
+    document.querySelectorAll('[id="gymTitle"]').forEach(el => {
+      el.textContent = nombre;
+    });
+  }
+
+  if(email){
+    document.querySelectorAll('[id="gymEmail"]').forEach(el => {
+      el.textContent = email;
+    });
+  }
+}
+ 
+function showGV(id,el,title,action){
+  document.querySelectorAll('#gymScreen .view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('#gSB .nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('gTitle').textContent=title;
+  document.getElementById('gTopBtn').textContent=action;
+  closeSB('gSB','gHam','gOv');
+}
+
+// ══ MODALS ══
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open')});
+});
+
+// ══ NOTIFY ══
+function notify(msg){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ══ QR SCAN ══
+const scanData=[
+  {name:'Martín López',info:'Plan 3 Días · 2 días restantes · 23/03 09:47',ok:true,days:2},
+  {name:'Sofía Ramírez',info:'Plan Semana · 4 días restantes · 23/03 09:48',ok:true,days:4},
+  {name:'Ana Fernández',info:'Plan Semana · Plan VENCIDO · 20/03/25',ok:false,days:0},
+  {name:'Diego Torres',info:'Plan Semana · 6 días restantes · 23/03 09:49',ok:true,days:6},
+];
+let scanIdx=0;
+function simulateScan(){
+  const d=scanData[scanIdx++%scanData.length];
+  document.getElementById('scanName').textContent=d.name;
+  document.getElementById('scanName').style.color=d.ok?'var(--green)':'var(--red)';
+  document.getElementById('scanInfo').textContent=d.info;
+  document.getElementById('scanIcon').textContent=d.ok?'✅':'❌';
+  const badge=document.getElementById('scanBadge');
+  if(d.ok){
+    badge.innerHTML=`<span class="sema sema-g" style="display:inline-block;margin-right:6px"></span><span class="badge bg">ACCESO PERMITIDO · ${d.days} días restantes</span>`;
+  } else {
+    badge.innerHTML='<span class="badge br">ACCESO DENEGADO — Plan vencido</span>';
+  }
+  const r=document.getElementById('scanResult');
+  r.style.borderColor=d.ok?'var(--green)':'var(--red)';
+  r.style.display='block';
+  notify(d.ok?`✅ ${d.name} — Acceso permitido`:`❌ ${d.name} — Plan vencido`);
+  setTimeout(()=>{r.style.display='none'},5000);
+}
+
+// ══ CLIENT REG ══
+function showClientReg(){document.getElementById('clientRegScreen').style.display='block'}
+function hideClientReg(){document.getElementById('clientRegScreen').style.display='none'}
+function selectRegPlan(n){
+  document.getElementById('crp1').classList.remove('feat');
+  document.getElementById('crp2').classList.remove('feat');
+  document.getElementById('crp'+n).classList.add('feat');
+}
+function registerClient(){
+  hideClientReg();
+  openModal('successModal');
+}
+
+// ══ FLYER ══
+const flyerPromos=[
+  '¡INSCRIPCIÓN GRATIS EN ABRIL!<br>Sumate al cambio hoy mismo',
+  '🔥 PROMO VERANO<br>2x1 en tu primer mes',
+  '💪 CLASES GRUPALES<br>Musculación · Funcional · Cardio',
+  '⚡ NUEVA MÁQUINARIA<br>Equipos de última generación',
+];
+let flyerI=0;
+function generateFlyer(){
+  flyerI=(flyerI+1)%flyerPromos.length;
+  document.getElementById('flyerText').innerHTML=flyerPromos[flyerI];
+  notify('✨ Flyer generado por IA');
+}
+function updateFlyer(){generateFlyer()}
+
+// ══ AI GYM DESIGN ══
+const aiPals=[
+  {bg:'linear-gradient(135deg,#e01f26,#000)'},
+  {bg:'linear-gradient(135deg,#ff6b00,#1a1a2e)'},
+  {bg:'linear-gradient(135deg,#a855f7,#0a0a0f)'},
+  {bg:'linear-gradient(135deg,#00c9a7,#003d32)'},
+  {bg:'linear-gradient(135deg,#f5c518,#1a1a00)'},
+];
+let aiI=0;
+function generateGymDesign(){
+  aiI=(aiI+1)%aiPals.length;
+  const p=document.getElementById('aiGymPreview');
+  const n=document.getElementById('newGymName').value.toUpperCase()||'NUEVO GYM';
+  p.style.background=aiPals[aiI].bg; p.textContent=n;
+  notify('✨ Diseño IA generado!');
+}
+function updateAIPreview(){
+  const n=document.getElementById('newGymName').value.toUpperCase();
+  const p=document.getElementById('aiGymPreview');
+  if(n) p.textContent=n;
+}
+function selectColorMaster(color,el){
+  document.querySelectorAll('#colorRowMaster .cdot').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('aiGymPreview').style.background=`linear-gradient(135deg,${color},#000)`;
+  notify('Color aplicado ✓');
+}
+function pickColorEdit(color,el){
+  el.closest('.color-row').querySelectorAll('.cdot').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on');
+  notify('Color actualizado ✓');
+}
+
+// ══ LOGO UPLOAD ══
+function triggerUpload(){document.getElementById('logoFileInput').click()}
+function handleLogoUpload(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    document.getElementById('logoPreviewImg').src=ev.target.result;
+    document.getElementById('uploadPlaceholder').style.display='none';
+    document.getElementById('logoPreviewWrap').style.display='block';
+    document.getElementById('logoUpload').classList.add('has-logo');
+    document.getElementById('aiGymPreview').innerHTML=`<img src="${ev.target.result}" style="height:36px;margin-bottom:6px;border-radius:4px">${document.getElementById('newGymName').value.toUpperCase()||'NUEVO GYM'}`;
+    notify('✅ Logo cargado correctamente');
+  };
+  reader.readAsDataURL(file);
+}
+function resetLogo(){
+  document.getElementById('logoFileInput').value='';
+  document.getElementById('uploadPlaceholder').style.display='block';
+  document.getElementById('logoPreviewWrap').style.display='none';
+  document.getElementById('logoUpload').classList.remove('has-logo');
+}
+document.getElementById("logoInput")?.addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const base64 = ev.target.result;
+
+    const img = document.getElementById("logoPreview");
+    img.src = base64;
+    img.style.display = "block";
+
+    localStorage.setItem("tempLogo", base64);
+  };
+
+  reader.readAsDataURL(file);
+});
+
+// ══ PAYMENT TOGGLE ══
+function selPago(t){
+  document.getElementById('pe').className=t==='e'?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';
+  document.getElementById('pt').className=t==='t'?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';
+}
+
+// ══ CREATE GYM ══
+function createGym(){
+ window.createGymFirebase();
+}
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAjPk5uAcDPI2p1kObPi3FY7wilSlPBuRs",
+  authDomain: "gymmaster-5cada.firebaseapp.com",
+  projectId: "gymmaster-5cada",
+  storageBucket: "gymmaster-5cada.firebasestorage.app",
+  messagingSenderId: "225979679434",
+  appId: "1:225979679434:web:541deb3ae58b8e9ba42a33"
+};
+
+  const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+  console.log("Firebase conectado 🔥");
+// Obtener parámetros de la URL
+function obtenerParametro(nombre) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(nombre);
+}
+
+// Validar acceso desde QR
+async function validarClienteDesdeQR() {
+    const gym = obtenerParametro("gym");
+    if (!gym) return;
+
+    console.log("Acceso desde QR detectado:", gym);
+}
+function renderGym(nombre, email, logo){
+  const container = document.getElementById("gymContainer");
+
+  const card = document.createElement("div");
+  card.className = "gym-card";
+  card.onclick = () => openGym(nombre, email, logo);
+  card.innerHTML = `
+  <div class="gym-card-top" style="background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;align-items:center;gap:12px">
+    ${logo ? `<img src="${logo}" style="width:54px;height:54px;object-fit:cover;border-radius:12px;background:#fff;padding:4px">` : ``}
+    <div style="font-size:20px;color:#fff;letter-spacing:2px">${nombre}</div>
+  </div>
+
+  <div style="padding:12px">
+    <div style="font-size:14px">${email}</div>
+    <div style="margin-top:8px;color:lime">Activo</div>
+  </div>
+`;
+
+  container.prepend(card);
+}
+window.createGymFirebase = async function(){
+  const name = document.getElementById('newGymName').value || 'Nuevo Gym';
+  const email = document.getElementById('newGymEmail').value || 'dueño@email.com';
+const logo = localStorage.getItem("tempLogo") || "";
+const gymSlug = name
+  .toLowerCase()
+  .trim()
+  .replace(/\s+/g, '-')
+  .replace(/[^a-z0-9\-]/g, '');
+  try {
+    await addDoc(collection(db, "gimnasios"), {
+  nombre: name,
+  email: email,
+  logo: logo,
+  slug: gymSlug,
+  estado: "activo",
+  fecha: new Date()
+});
+localStorage.setItem("gymNombreActivo", name);
+localStorage.setItem("gymEmailActivo", email);
+localStorage.setItem("gymLogoActivo", logo || "");
+localStorage.setItem("gymSlugActivo", gymSlug);
+
+const gymLink = window.location.origin + window.location.pathname + "?gym=" + gymSlug;
+localStorage.setItem("gymLinkActivo", gymLink);
+
+console.log("Link del gym:", gymLink);
+console.log("Gimnasio guardado en Firebase ✅");
+notify("🔥 Gimnasio guardado en Firebase");
+renderGym(name, email, logo);
+localStorage.removeItem("tempLogo");
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+function autoOpenGymFromURL(){
+    const params = new URLSearchParams(window.location.search);
+    const gymSlugURL = params.get("gym");
+
+    if(!gymSlugURL) return;
+
+    const nombre = localStorage.getItem("gymNombreActivo");
+    const email = localStorage.getItem("gymEmailActivo");
+    const logo = localStorage.getItem("gymLogoActivo") || "";
+    const slug = localStorage.getItem("gymSlugActivo");
+
+    if(slug && gymSlugURL === slug){
+        localStorage.setItem("gymNombreActivo", nombre || "");
+        localStorage.setItem("gymEmailActivo", email || "");
+        localStorage.setItem("gymLogoActivo", logo || "");
+
+        goTo("gymLoginScreen");
+        loadActiveGym();
+
+        setTimeout(() => {
+            mostrarQRGym();
+        }, 300);
+    }
+}
+window.mostrarQR = function(){
+  return;
+}
+ 
+window.mostrarQRGym = function(){
+    const link = localStorage.getItem("gymLinkActivo");
+
+    if(!link){
+        alert("No hay link del gym");
+        return;
+    }
+
+    const canvas = document.getElementById("qrCanvas");
+
+    if(!canvas){
+        console.log("No encontró el canvas QR");
+        return;
+    }
+
+    new QRious({
+        element: canvas,
+        value: link,
+        size: 200
+    });
+
+    openModal("gymQRModal");
+}
+window.onload = function(){
+  loadActiveGym();
+  autoOpenGymFromURL();
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+</body>
+</html>
